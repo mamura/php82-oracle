@@ -22,7 +22,8 @@ RUN apt-get update \
     nano \
     supervisor \
     bash \
-    wget
+    wget \
+    libldap2-dev
 
 RUN add-apt-repository ppa:ondrej/php \
     && apt-get -yqq update
@@ -79,11 +80,11 @@ RUN max_fpm=$(grep -m1 -n "max_execution_time" /etc/php/8.2/fpm/php.ini | cut -f
 
 RUN filesize_cli=$(grep -m1 -n "upload_max_filesize" /etc/php/8.2/cli/php.ini | cut -f1 -d:) \
     && sed -i "${filesize_cli}d" /etc/php/8.2/cli/php.ini \
-    && sed -i "${filesize_cli}i upload_max_filesize = 200M" /etc/php/cli/php.ini
+    && sed -i "${filesize_cli}i upload_max_filesize = 200M" /etc/php/8.2/cli/php.ini
 
 RUN filesize_fpm=$(grep -m1 -n "upload_max_filesize" /etc/php/8.2/fpm/php.ini | cut -f1 -d:) \
     && sed -i "${filesize_fpm}d" /etc/php/8.2/fpm/php.ini \
-    && sed -i "${filesize_fpm}i upload_max_filesize = 200M" /etc/php/fpm/php.ini
+    && sed -i "${filesize_fpm}i upload_max_filesize = 200M" /etc/php/8.2/fpm/php.ini
 
 RUN post_cli=$(grep -m1 -n "post_max_size" /etc/php/8.2/cli/php.ini | cut -f1 -d:) \
     && sed -i "${post_cli}d" /etc/php/8.2/cli/php.ini \
@@ -115,17 +116,17 @@ RUN php -r "unlink('composer-setup.php');"
 
 # OCI extension | Orcle InstantClient
 RUN mkdir -p /opt/oracle
-RUN wget https://download.oracle.com/otn_software/linux/instantclient/218000/instantclient-basic-linux.x64-21.8.0.0dbru.zip
-RUN wget https://download.oracle.com/otn_software/linux/instantclient/218000/instantclient-sdk-linux.x64-21.8.0.0dbru.zip
-RUN unzip -o ./instantclient-basic-linux.x64-21.8.0.0dbru.zip -d /opt/oracle
-RUN unzip -o ./instantclient-sdk-linux.x64-21.8.0.0dbru.zip -d /opt/oracle
-RUN rm instantclient-basic-linux.x64-21.8.0.0dbru.zip
-RUN rm instantclient-sdk-linux.x64-21.8.0.0dbru.zip
+RUN wget https://download.oracle.com/otn_software/linux/instantclient/218000/instantclient-basic-linux.x64-21.8.0.0.0dbru.zip
+RUN wget https://download.oracle.com/otn_software/linux/instantclient/218000/instantclient-sdk-linux.x64-21.8.0.0.0dbru.zip
+RUN unzip -o ./instantclient-basic-linux.x64-21.8.0.0.0dbru.zip -d /opt/oracle
+RUN unzip -o ./instantclient-sdk-linux.x64-21.8.0.0.0dbru.zip -d /opt/oracle
+RUN rm instantclient-basic-linux.x64-21.8.0.0.0dbru.zip
+RUN rm instantclient-sdk-linux.x64-21.8.0.0.0dbru.zip
 RUN ln -s /opt/oracle/instantclient/sqlplus /usr/bin/sqlplus
 RUN ln -s /opt/oracle/instantclient_21_8 /opt/oracle/instantclient
 RUN echo /opt/oracle/instantclient_21_8 > /etc/ld.so.conf.d/oracle-instantclient.conf
 RUN ldconfig
-RUN echo 'instantclient./opt/oracle/instantclient' | pecl install oci8-3.2.1
+RUN echo 'instantclient,/opt/oracle/instantclient' | pecl install oci8-3.2.1
 RUN echo "extension=oci8.so" >> /etc/php/8.2/mods-available/oci8.ini \
     && ln -s /etc/php/8.2/mods-available/oci8.ini /etc/php/8.2/cli/conf.d/20-oci8.ini \
     && ln -s /etc/php/8.2/mods-available/oci8.ini /etc/php/8.2/fpm/conf.d/20-oci8.ini \

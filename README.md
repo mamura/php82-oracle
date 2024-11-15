@@ -1,0 +1,2 @@
+- docker build -t ghcr.io/mamura/php82-oracle:latest .
+- docker push ghcr.io/mamura/php82-oracle:latest
